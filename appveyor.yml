@@ -2,7 +2,7 @@ version: 0.1.{build}
 image: Visual Studio 2017
 environment:
   COVERALLS_REPO_TOKEN:
-    secure: k+0InS2aLYQUK9lnSuMiMptDMQWgn4RF3skssvH4L4EdM10IbUfM448UB69CAb+qmbLlbL+/TovSng5XsPsGQc76D/JduJC1KVSOxuU4u5Q=
+    secure: +VA483EEFhCFwcB9Bv9I2O2MlloRP45C+pJ44RAEMPmSE1GzcI3K/egDbcJTWQ6pEQFfyXYG6GrNFJclIOgkiBwWWtJ027ujmpdEE6nSz5g=
 build_script:
 - cmd: >-
     dotnet restore
