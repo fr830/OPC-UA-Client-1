@@ -1,6 +1,6 @@
 image: Visual Studio 2017
 init:
     - git config --global core.autocrlf input
-build:
+build_script:
     - dotnet restore
     - dotnet build
