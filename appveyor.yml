@@ -1,6 +1,15 @@
+version: 0.1.{build}
 image: Visual Studio 2017
 init:
-    - git config --global core.autocrlf input
+ - git config --global core.autocrlf input
+environment:
+  COVERALLS_REPO_TOKEN:
+    secure: k+0InS2aLYQUK9lnSuMiMptDMQWgn4RF3skssvH4L4EdM10IbUfM448UB69CAb+qmbLlbL+/TovSng5XsPsGQc76D/JduJC1KVSOxuU4u5Q=
 build_script:
-    - dotnet restore
-    - dotnet build
+- cmd: >-
+    dotnet restore
+
+    dotnet build
+after_test:
+- ps: .\coveralls.ps1
+
