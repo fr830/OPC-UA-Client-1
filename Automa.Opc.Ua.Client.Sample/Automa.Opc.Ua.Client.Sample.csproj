@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <AssemblyName>Automa.Opc.Ua.Client.SampleCore</AssemblyName>
+    <RootNamespace>Automa.Opc.Ua.Client.SampleCore</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Portable.BouncyCastle" Version="1.8.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Automa.Opc.Ua.Client\Automa.Opc.Ua.Client.csproj" />
+  </ItemGroup>
+
+</Project>

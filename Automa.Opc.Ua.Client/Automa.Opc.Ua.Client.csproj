@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Version>0.1.0</Version>
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <PackageTags>OPC UA  Manufacturing PLC  MES MESA ISA95</PackageTags>
+    <Copyright>2017 ∆UTOM∆</Copyright>
+    <PackageLicenseUrl>https://github.com/automa-gq/OPC-UA-Client/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/automa-gq/OPC-UA-Client</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/automa-gq/OPC-UA-Client</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OPCFoundation.NetStandard.Opc.Ua" Version="0.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\" />
+  </ItemGroup>
+
+</Project>
