@@ -3,8 +3,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp1.1</TargetFramework>
-    <AssemblyName>Automa.Opc.Ua.Client.SampleCore</AssemblyName>
-    <RootNamespace>Automa.Opc.Ua.Client.SampleCore</RootNamespace>
+    <AssemblyName>Automa.Opc.Ua.Client.Sample</AssemblyName>
+    <RootNamespace>Automa.Opc.Ua.Client.Sample</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
