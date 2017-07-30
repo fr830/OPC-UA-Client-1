@@ -10,6 +10,7 @@
     <PackageLicenseUrl>https://github.com/automa-gq/OPC-UA-Client/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/automa-gq/OPC-UA-Client</PackageProjectUrl>
     <RepositoryUrl>https://github.com/automa-gq/OPC-UA-Client</RepositoryUrl>
+    <DebugType>Full</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
