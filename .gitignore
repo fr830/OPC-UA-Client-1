@@ -289,3 +289,6 @@ __pycache__/
 
 #OpenCover and ReportGenerator
 coverage/
+
+#Visual Studio Code
+.vscode/

@@ -11,6 +11,8 @@ namespace Automa.Opc.Ua.Client
 {
     public class Client : IDisposable
     {
+        internal static Session MoqSession { get; set; }
+        internal static DiscoveryClient MoqDiscoveryClient { get; set; }
         private Session _session;
         private ClientOptions _options;
         private readonly Dictionary<string, Subscription> _subscriptions = new Dictionary<string, Subscription>();
@@ -76,7 +78,7 @@ namespace Automa.Opc.Ua.Client
             var configuration = EndpointConfiguration.Create(config);
             configuration.OperationTimeout = 10;
             EndpointDescriptionCollection endpoints = null;
-            using (var client = DiscoveryClient.Create(
+            using (var client = MoqDiscoveryClient ?? DiscoveryClient.Create(
                 endpointUri,
                 EndpointConfiguration.Create(config)))
             {
@@ -98,7 +100,7 @@ namespace Automa.Opc.Ua.Client
             ep.Update(endpointDescription);
             return new Client
             {
-                _session = await Session.Create(config, ep, true, options.ApplicationName, options.SessionTimeout, new UserIdentity(new AnonymousIdentityToken()), null),
+                _session = MoqSession ?? await Session.Create(config, ep, true, options.ApplicationName, options.SessionTimeout, new UserIdentity(new AnonymousIdentityToken()), null),
                 _options = options
             };
         }
@@ -131,7 +133,8 @@ namespace Automa.Opc.Ua.Client
                         StartNodeId = nodeId
                     }
                 };
-                list.ForEach(i => i.Notification += (item, e) => {
+                list.ForEach(i => i.Notification += (item, e) =>
+                {
                     notify?.Invoke(this, new ChangeEventArgs
                     {
                         Tag = item.DisplayName,
@@ -162,7 +165,6 @@ namespace Automa.Opc.Ua.Client
                 _subscriptions.Remove(tag);
             });
         }
-
         private static string RemoveSpecialCharacters(string str)
         {
             StringBuilder sb = new StringBuilder();
