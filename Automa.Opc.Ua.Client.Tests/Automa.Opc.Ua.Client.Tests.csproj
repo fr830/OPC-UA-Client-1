@@ -10,6 +10,7 @@
     <PackageReference Include="NUnit3TestAdapter" Version="3.8.0" />
     <PackageReference Include="OPCFoundation.NetStandard.Opc.Ua" Version="0.4.0" />
     <PackageReference Include="Moq" Version="4.7.99" />
+    <PackageReference Include="Portable.BouncyCastle" Version="1.8.1.2" />
   </ItemGroup>
 
   <ItemGroup>

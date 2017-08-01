@@ -5,15 +5,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Automa.Opc.Ua.Client.Services;
+using Automa.Opc.Ua.Client.Interfaces;
 // ReSharper disable AccessToDisposedClosure
 
 namespace Automa.Opc.Ua.Client
 {
     public class Client : IDisposable
     {
-        internal static Session MoqSession { get; set; }
-        internal static DiscoveryClient MoqDiscoveryClient { get; set; }
-        private Session _session;
+        internal static ISession sessionStub { get; set; }
+        internal static IDiscoveryClient discoveryClientStub { get; set; }
+        private ISession _session;
         private ClientOptions _options;
         private readonly Dictionary<string, Subscription> _subscriptions = new Dictionary<string, Subscription>();
 
@@ -28,7 +30,7 @@ namespace Automa.Opc.Ua.Client
             {
                 ApplicationName = options.ApplicationName,
                 ApplicationType = ApplicationType.Client,
-                ApplicationUri = $"urn:{Utils.GetHostName()}:OPCFoundation:{ConvertToCamelCase(RemoveSpecialCharacters(options.ApplicationName))}",
+                ApplicationUri = $"urn:{Utils.GetHostName()}:OPCFoundation:HelloWorld",
                 SecurityConfiguration = new SecurityConfiguration
                 {
                     ApplicationCertificate = new CertificateIdentifier
@@ -57,33 +59,36 @@ namespace Automa.Opc.Ua.Client
 
             await config.Validate(ApplicationType.Client);
 
-            if (config.SecurityConfiguration.ApplicationCertificate.Certificate == null)
-            {
-                config.SecurityConfiguration.ApplicationCertificate.Certificate = options.ApplicationCertificate;
-            }
+            config.SecurityConfiguration.ApplicationCertificate.Certificate = options.ApplicationCertificate;
+
             if (config.SecurityConfiguration.ApplicationCertificate.Certificate != null)
             {
                 config.ApplicationUri = Utils.GetApplicationUriFromCertificate(config.SecurityConfiguration.ApplicationCertificate.Certificate);
+            }
 
-                if (config.SecurityConfiguration.AutoAcceptUntrustedCertificates)
+
+            if (config.SecurityConfiguration.AutoAcceptUntrustedCertificates)
+            {
+                config.CertificateValidator.CertificateValidation += (validator, e) =>
                 {
-                    config.CertificateValidator.CertificateValidation += (validator, e) =>
-                    {
-                        e.Accept = (e.Error.StatusCode == StatusCodes.BadCertificateUntrusted);
-                    };
-                }
+                    e.Accept = (e.Error.StatusCode == StatusCodes.BadCertificateUntrusted);
+                };
             }
 
             var endpointUri = new Uri(options.EndpointUrl);
             var configuration = EndpointConfiguration.Create(config);
             configuration.OperationTimeout = 10;
             EndpointDescriptionCollection endpoints = null;
-            using (var client = MoqDiscoveryClient ?? DiscoveryClient.Create(
+            using (var client = discoveryClientStub != null ? discoveryClientStub.Create(
+                endpointUri,
+                EndpointConfiguration.Create(config)) : (new DiscoveryClientService()).Create(
                 endpointUri,
                 EndpointConfiguration.Create(config)))
             {
-                await Task.Factory.FromAsync((callback, stateObject) => client.BeginGetEndpoints(null, null, null, null,
-                    callback, stateObject), (result) => client.EndGetEndpoints(result, out endpoints), null);
+                await Task.Run(() =>
+               {
+                   client.GetEndpoints(null, null, null, null, out endpoints);
+               });
             }
             endpoints = new EndpointDescriptionCollection(endpoints.Select(e =>
             {
@@ -96,11 +101,14 @@ namespace Automa.Opc.Ua.Client
             var endpointDescription = config.SecurityConfiguration.ApplicationCertificate.Certificate != null ?
                 endpoints.Where(e => e.TransportProfileUri == Profiles.UaTcpTransport).OrderByDescending(e => e.SecurityLevel).FirstOrDefault() :
                 endpoints.Where(e => e.TransportProfileUri == Profiles.UaTcpTransport).OrderBy(e => e.SecurityLevel).FirstOrDefault();
+            endpointDescription = endpointDescription ?? new EndpointDescription(options.EndpointUrl);
             var ep = new ConfiguredEndpoint(endpointDescription.Server, EndpointConfiguration.Create(config));
             ep.Update(endpointDescription);
             return new Client
             {
-                _session = MoqSession ?? await Session.Create(config, ep, true, options.ApplicationName, options.SessionTimeout, new UserIdentity(new AnonymousIdentityToken()), null),
+                _session = sessionStub != null ?
+                    await sessionStub.Create(config, ep, true, options.ApplicationName, options.SessionTimeout, new UserIdentity(new AnonymousIdentityToken()), null) :
+                    await (new SessionService()).Create(config, ep, true, options.ApplicationName, options.SessionTimeout, new UserIdentity(new AnonymousIdentityToken()), null),
                 _options = options
             };
         }
@@ -125,7 +133,7 @@ namespace Automa.Opc.Ua.Client
             NodeId nodeId = tag;
             await Task.Run(() =>
             {
-                var subscription = new Subscription(_session.DefaultSubscription) { PublishingInterval = interval == -1 ? _options.DefaultPublishingInterval : interval };
+                var subscription = new Subscription(_session.GetDefaultSubscription()) { PublishingInterval = interval == -1 ? _options.DefaultPublishingInterval : interval };
                 var list = new List<MonitoredItem> {
                     new MonitoredItem(subscription.DefaultItem)
                     {
@@ -143,7 +151,6 @@ namespace Automa.Opc.Ua.Client
                 });
                 subscription.AddItems(list);
                 _session.AddSubscription(subscription);
-                subscription.Create();
                 _subscriptions.Add(tag, subscription);
             });
         }
@@ -165,7 +172,7 @@ namespace Automa.Opc.Ua.Client
                 _subscriptions.Remove(tag);
             });
         }
-        private static string RemoveSpecialCharacters(string str)
+        internal static string RemoveSpecialCharacters(string str)
         {
             StringBuilder sb = new StringBuilder();
             foreach (char c in str)
@@ -178,7 +185,7 @@ namespace Automa.Opc.Ua.Client
             return sb.ToString();
         }
 
-        private static string ConvertToCamelCase(string phrase)
+        internal static string ConvertToCamelCase(string phrase)
         {
             var splittedPhrase = phrase.Split(' ', '-', '.');
             var sb = new StringBuilder();
