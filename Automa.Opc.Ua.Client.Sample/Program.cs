@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Org.BouncyCastle.Asn1.X509;
@@ -33,6 +34,24 @@ namespace Automa.Opc.Ua.Client.Sample
                 ApplicationCertificate = GenerateCertificate("UA Core Sample Client")
             }))
             {
+                Console.WriteLine("read 1st level nodes under root");
+                var nodes = await client.BrowseNode();
+                foreach (var node in nodes)
+                {
+                    Console.WriteLine($"Tag: {node.Tag}, DisplayName: {node.DisplayName}");
+                    Console.WriteLine($"read {node.DisplayName} child nodes");
+                    var childNodes = await client.BrowseNode(node.Tag);
+                    foreach (var childNode in childNodes)
+                    {
+                        Console.WriteLine($"Tag: {childNode.Tag}, DisplayName: {childNode.DisplayName}");
+                    }
+                }
+                Console.WriteLine("read current value for ServerStatusCurrentTime");
+                var values = await client.ReadNode("i=2258");
+                foreach (var value in values)
+                {
+                    Console.WriteLine($"ServerStatusCurrentTime: {value}");
+                }
                 Console.WriteLine("start watching ServerStatusCurrentTime, just first 5 changes");
                 var counter = 0;
                 await client.Watch("i=2258", async (sender, e) =>

@@ -13,8 +13,8 @@ namespace Automa.Opc.Ua.Client
 {
     public class Client : IDisposable
     {
-        internal static ISession sessionStub { get; set; }
-        internal static IDiscoveryClient discoveryClientStub { get; set; }
+        internal static ISession SessionStub { get; set; }
+        internal static IDiscoveryClient DiscoveryClientStub { get; set; }
         private ISession _session;
         private ClientOptions _options;
         private readonly Dictionary<string, Subscription> _subscriptions = new Dictionary<string, Subscription>();
@@ -50,7 +50,7 @@ namespace Automa.Opc.Ua.Client
                         StorePath = "Directory",
                     },
                     NonceLength = 32,
-                    AutoAcceptUntrustedCertificates = true
+                    AutoAcceptUntrustedCertificates = options.AutoAcceptUntrustedCertificates
                 },
                 TransportConfigurations = new TransportConfigurationCollection(),
                 TransportQuotas = new TransportQuotas { OperationTimeout = 15000 },
@@ -79,7 +79,7 @@ namespace Automa.Opc.Ua.Client
             var configuration = EndpointConfiguration.Create(config);
             configuration.OperationTimeout = 10;
             EndpointDescriptionCollection endpoints = null;
-            using (var client = discoveryClientStub != null ? discoveryClientStub.Create(
+            using (var client = DiscoveryClientStub != null ? DiscoveryClientStub.Create(
                 endpointUri,
                 EndpointConfiguration.Create(config)) : (new DiscoveryClientService()).Create(
                 endpointUri,
@@ -106,8 +106,8 @@ namespace Automa.Opc.Ua.Client
             ep.Update(endpointDescription);
             return new Client
             {
-                _session = sessionStub != null ?
-                    await sessionStub.Create(config, ep, true, options.ApplicationName, options.SessionTimeout, new UserIdentity(new AnonymousIdentityToken()), null) :
+                _session = SessionStub != null ?
+                    await SessionStub.Create(config, ep, true, options.ApplicationName, options.SessionTimeout, new UserIdentity(new AnonymousIdentityToken()), null) :
                     await (new SessionService()).Create(config, ep, true, options.ApplicationName, options.SessionTimeout, new UserIdentity(new AnonymousIdentityToken()), null),
                 _options = options
             };
@@ -145,7 +145,6 @@ namespace Automa.Opc.Ua.Client
                 {
                     notify?.Invoke(this, new ChangeEventArgs
                     {
-                        Tag = item.DisplayName,
                         Values = item.DequeueValues().Select(x => x.Value)
                     });
                 });
@@ -172,6 +171,7 @@ namespace Automa.Opc.Ua.Client
                 _subscriptions.Remove(tag);
             });
         }
+
         internal static string RemoveSpecialCharacters(string str)
         {
             StringBuilder sb = new StringBuilder();
@@ -218,5 +218,62 @@ namespace Automa.Opc.Ua.Client
         /// <param name="sender"></param>
         /// <param name="e"></param>
         public delegate void ChangeHandler(object sender, ChangeEventArgs e);
+
+        /// <summary>
+        /// Reads a node, given its tag
+        /// </summary>
+        /// <param name="tag">The tag of the node to be read</param>
+        /// <returns>the the values for the node corresponding to given tag</returns>
+        public async Task<IEnumerable<object>> ReadNode(string tag)
+        {
+            NodeId nodeId = tag;
+            var results = new DataValueCollection();
+            DiagnosticInfoCollection diagnosticInfos;
+            var nodesToRead = new ReadValueIdCollection
+            {
+                new ReadValueId
+                {
+                    NodeId = nodeId,
+                    AttributeId = Attributes.Value
+                }
+            };
+            await Task.Run(() =>
+               {
+                   _session.Read(null, 0, TimestampsToReturn.Neither, nodesToRead, out results, out diagnosticInfos);
+               });
+            return results.Select(x => x.Value);
+        }
+
+        /// <summary>
+        /// Reads a node, given its tag
+        /// </summary>
+        /// <param name="tag">The tag of the node to be read</param>
+        /// <returns>the the values for the node corresponding to given tag</returns>
+        public async Task<IEnumerable<Models.Node>> BrowseNode(string tag = null)
+        {
+            var nodeId = tag == null ? ObjectIds.ObjectsFolder : ExpandedNodeId.ToNodeId(tag, _session.GetNamespaceUris());
+            var references = new ReferenceDescriptionCollection();
+            byte[] continuationPoint;
+
+            await Task.Run(() =>
+               {
+                   _session.Browse(
+                       null,
+                       null,
+                       nodeId,
+                       0u,
+                       BrowseDirection.Forward,
+                       ReferenceTypeIds.HierarchicalReferences,
+                       true,
+                       (uint)NodeClass.Variable | (uint)NodeClass.Object | (uint)NodeClass.Method,
+                       out continuationPoint,
+                       out references);
+               });
+            return references.Select(x => new Models.Node
+            {
+                Tag = x.NodeId.ToString(),
+                DisplayName = x.DisplayName.Text
+            });
+        }
     }
 }

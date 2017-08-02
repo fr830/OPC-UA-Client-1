@@ -15,5 +15,15 @@ namespace Automa.Opc.Ua.Client.Interfaces
         void AddSubscription(Subscription subscription);
 
         void RemoveSubscription(Subscription subscription);
+
+        ResponseHeader Read(RequestHeader requestHeader, double maxAge, TimestampsToReturn timestampsToReturn,
+            ReadValueIdCollection nodesToRead, out DataValueCollection results,
+            out DiagnosticInfoCollection diagnosticInfos);
+
+        ResponseHeader Browse(RequestHeader requestHeader, ViewDescription view, NodeId nodeToBrowse, uint maxResultsToReturn, BrowseDirection browseDirection, NodeId referenceTypeId, bool includeSubtypes,
+            uint nodeClassMask, out byte[] continuationPoint,
+            out ReferenceDescriptionCollection references);
+
+        NamespaceTable GetNamespaceUris();
     }
 }

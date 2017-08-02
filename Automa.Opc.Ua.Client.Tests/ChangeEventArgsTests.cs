@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using NUnit.Framework;
 
 namespace Automa.Opc.Ua.Client.Tests
@@ -8,16 +6,6 @@ namespace Automa.Opc.Ua.Client.Tests
     [TestFixture]
     public class ChangeEventArgsTests
     {
-
-        [Test]
-        public void Tag()
-        {
-            var obj = new ChangeEventArgs();
-            const string val = "Tag";
-            obj.Tag = val;
-            Assert.That(obj.Tag, Is.EqualTo(val));
-        }
-
         [Test]
         public void Values()
         {
