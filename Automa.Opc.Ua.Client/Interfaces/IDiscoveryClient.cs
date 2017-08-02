@@ -1,8 +1,5 @@
 using System;
-using Opc.Ua.Client;
-using System.Threading.Tasks;
 using Opc.Ua;
-using System.Collections.Generic;
 
 namespace Automa.Opc.Ua.Client.Interfaces
 {

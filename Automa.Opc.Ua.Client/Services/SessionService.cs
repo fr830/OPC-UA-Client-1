@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Automa.Opc.Ua.Client.Interfaces;
@@ -51,6 +50,11 @@ namespace Automa.Opc.Ua.Client.Services
         public NamespaceTable GetNamespaceUris()
         {
             return _session.NamespaceUris;
+        }
+
+        public INode Find(ExpandedNodeId nodeId)
+        {
+            return _session.NodeCache.Find(nodeId);
         }
     }
 }

@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Automa.Opc.Ua.Client.Interfaces;
 using Opc.Ua;
-using Opc.Ua.Client;
 
 namespace Automa.Opc.Ua.Client.Services
 {

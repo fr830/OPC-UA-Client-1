@@ -275,5 +275,51 @@ namespace Automa.Opc.Ua.Client.Tests
                 Assert.That(enumerable.Single().DisplayName, Is.EqualTo(results.Single().DisplayName.Text));
             }
         }
+
+        [Test]
+        public async Task GetNode()
+        {
+            _mockSession.Setup(x => x.Find(
+                "s=NodeId"
+            )).Returns(new global::Opc.Ua.Node
+            {
+                NodeId = "NodeId",
+                DisplayName = "DisplayName"
+            });
+
+            using (var client = await Client.Create(new ClientOptions
+            {
+                ApplicationName = "UA Core Sample Client",
+                EndpointUrl = $"opc.tcp://{Environment.MachineName}:51210/UA/SampleServer",
+                ApplicationCertificate = null,
+                AutoAcceptUntrustedCertificates = true
+            }))
+            {
+                var node = await client.GetNode("s=NodeId");
+                Assert.That(node, Is.Not.Null);
+                Assert.That(node.Tag, Is.EqualTo("s=NodeId"));
+                Assert.That(node.DisplayName, Is.EqualTo("DisplayName"));
+            }
+        }
+
+        [Test]
+        public async Task GetNode2()
+        {
+            _mockSession.Setup(x => x.Find(
+                "s=NodeId"
+            )).Returns((INode) null);
+
+            using (var client = await Client.Create(new ClientOptions
+            {
+                ApplicationName = "UA Core Sample Client",
+                EndpointUrl = $"opc.tcp://{Environment.MachineName}:51210/UA/SampleServer",
+                ApplicationCertificate = null,
+                AutoAcceptUntrustedCertificates = true
+            }))
+            {
+                var node = await client.GetNode("node");
+                Assert.That(node, Is.Null);
+            }
+        }
     }
 }

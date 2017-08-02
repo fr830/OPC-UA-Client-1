@@ -25,5 +25,7 @@ namespace Automa.Opc.Ua.Client.Interfaces
             out ReferenceDescriptionCollection references);
 
         NamespaceTable GetNamespaceUris();
+
+        INode Find(ExpandedNodeId nodeId);
     }
 }

@@ -275,5 +275,26 @@ namespace Automa.Opc.Ua.Client
                 DisplayName = x.DisplayName.Text
             });
         }
+
+        /// <summary>
+        /// Gets node information, given its tag
+        /// </summary>
+        /// <param name="tag">The tag of the node to be read</param>
+        /// <returns>the information for the node corresponding to given tag</returns>
+        public async Task<Models.Node> GetNode(string tag)
+        {
+            INode node = null;
+            await Task.Run(() =>
+            {
+                node = _session.Find(tag);
+            });
+            return node == null
+                ? null
+                : new Models.Node
+                {
+                    Tag = node.NodeId.ToString(),
+                    DisplayName = node.DisplayName.Text
+                };
+        }
     }
 }

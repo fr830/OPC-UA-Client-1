@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Automa.Opc.Ua.Client.Models
+﻿namespace Automa.Opc.Ua.Client.Models
 {
     public class Node
     {

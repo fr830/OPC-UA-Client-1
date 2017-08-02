@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Org.BouncyCastle.Asn1.X509;
@@ -46,24 +45,28 @@ namespace Automa.Opc.Ua.Client.Sample
                         Console.WriteLine($"Tag: {childNode.Tag}, DisplayName: {childNode.DisplayName}");
                     }
                 }
-                Console.WriteLine("read current value for ServerStatusCurrentTime");
-                var values = await client.ReadNode("i=2258");
+                const string tag = "i=2258";
+                Console.WriteLine($"read node information for node with tag {tag}");
+                var currentTime = await client.GetNode(tag);
+                Console.WriteLine($"Tag: {currentTime.Tag}, DisplayName: {currentTime.DisplayName}");
+                Console.WriteLine($"read current value for {currentTime.DisplayName}");
+                var values = await client.ReadNode(tag);
                 foreach (var value in values)
                 {
-                    Console.WriteLine($"ServerStatusCurrentTime: {value}");
+                    Console.WriteLine($"{currentTime.DisplayName}: {value}");
                 }
-                Console.WriteLine("start watching ServerStatusCurrentTime, just first 5 changes");
+                Console.WriteLine($"start watching {currentTime.DisplayName}, just first 5 changes");
                 var counter = 0;
-                await client.Watch("i=2258", async (sender, e) =>
+                await client.Watch(tag, async (sender, e) =>
                 {
                     foreach (var value in e.Values)
                     {
-                        Console.WriteLine($"ServerStatusCurrentTime: {value}");
+                        Console.WriteLine($"{currentTime.DisplayName}: {value}");
                     }
                     counter++;
                     if (counter != 5) return;
-                    await client.Unwatch("i=2258");
-                    Console.WriteLine("stopped watching ServerStatusCurrentTime");
+                    await client.Unwatch(tag);
+                    Console.WriteLine($"stopped watching {currentTime.DisplayName}");
                 });
 
                 Console.ReadKey(true);
